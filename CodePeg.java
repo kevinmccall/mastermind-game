@@ -6,5 +6,6 @@ public enum CodePeg {
     GREEN,
     WHITE,
     BLACK,
-    RED
+    RED,
+    INVALID
 }

@@ -10,47 +10,58 @@ public class Game {
     public static void main(String[] args) {
         Game game = new Game();
         Scanner scanner = new Scanner(System.in);
-        for (int i = 0; i < Game.NUM_GUESSES && !game.hasWon; i++) {
-            Game.printArray((game.makeGuess(getGuess(scanner))));
+
+        game.play(scanner);
+
+    }
+
+    public void play(Scanner scanner) {
+        for (int i = 0; i < Game.NUM_GUESSES && !hasWon; i++) {
+            Game.printArray((makeGuess(getGuess(scanner))));
         }
-        if (game.hasWon) {
+        if (hasWon) {
             System.out.println("Codebreaker has won");
         } else {
             System.out.println("Codemaker has won");
         }
     }
 
-    public int[] makeGuess(int[] guess) {
-        int[] codeCopy = new int[NUM_CODEPEGS];
-        int rIndex = 0;
-        int[] r = new int[NUM_CODEPEGS];
+    public Response[] makeGuess(int[] guess) {
+        int responseIndex = 0;
+        int difIndex = 0;
+        int[] potentialPegs = new int[NUM_CODEPEGS];
+        Response[] response = new Response[NUM_CODEPEGS];
 
         for (int i = 0; i < code.length; i++) {
-            codeCopy[i] = code[i];
+            if (guess[i] != code[i]) {
+                potentialPegs[difIndex] = code[i];
+                difIndex++;
+            }
         }
 
         hasWon = true;
-        for (int i = 0; i < codeCopy.length; i++) {
-            if (guess[i] == codeCopy[i]) {
-                guess[i] = -1;
-                codeCopy[i] = -1;
-                r[rIndex] = 2;
-                rIndex += 1;
+        for (int i = 0; i < guess.length; i++) {
+            if (code[i] == guess[i]) {
+                response[responseIndex] = Response.CORRECT_SPOT;
+                responseIndex += 1;
             } else {
+                boolean inWordDifferentPos = false;
+                for (int j = 0; j < difIndex && !inWordDifferentPos; j++) {
+                    if (potentialPegs[j] == guess[i]) {
+                        response[responseIndex] = Response.DIFFERENT_SPOT;
+                        responseIndex++;
+                        potentialPegs[j] = -1;
+                        inWordDifferentPos = true;
+                    }
+                }
+                if (!inWordDifferentPos) {
+                    response[responseIndex] = Response.INCORRECT;
+                    responseIndex++;
+                }
                 hasWon = false;
             }
         }
-        for (int i = 0; i < guess.length && !hasWon; i++) {
-            if (codeCopy[i] != -1) {
-                for (int j = 0; j < codeCopy.length; j++) {
-                    if (codeCopy[j] == guess[i]) {
-                        r[rIndex] = 1;
-                        codeCopy[j] = -1;
-                    }
-                }
-            }
-        }
-        return r;
+        return response;
     }
 
     public static int[] getGuess(Scanner scanner) {
@@ -62,7 +73,7 @@ public class Game {
         return guess;
     }
 
-    public static void printArray(int[] arr) {
+    public static void printArray(Response[] arr) {
         for (int i = 0; i < arr.length; i++) {
             System.out.println(arr[i]);
         }
