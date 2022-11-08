@@ -1,11 +1,28 @@
 package mvp;
 
 import java.util.Scanner;
+import java.util.Random;
 
 public class Game {
     private int[] code = new int[] { 0, 1, 2, 3 };
     public boolean hasWon = false;
     public static final int NUM_CODEPEGS = 4, NUM_ROWS = 12, DIFFERENT_COLORS = 6, NUM_GUESSES = 12;
+
+    public Game(int[] secretCode) {
+        code = secretCode;
+    }
+
+    public Game(long seed) {
+        Random random = new Random(seed);
+        int[] code = new int[NUM_CODEPEGS];
+        for (int i = 0; i < code.length; i++) {
+            code[i] = random.nextInt(DIFFERENT_COLORS);
+        }
+    }
+
+    public Game() {
+        this(new Random().nextLong());
+    }
 
     public static void main(String[] args) {
         Game game = new Game();
