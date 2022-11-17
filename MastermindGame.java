@@ -1,6 +1,8 @@
 import java.util.Random;
 import java.util.Scanner;
 
+import mvp.CodePeg;
+
 public class MastermindGame {
     public static final int NUM_CODEPEGS = 4, NUM_ROWS = 12, DIFFERENT_COLORS = 6, NUM_GUESSES = 12;
 
