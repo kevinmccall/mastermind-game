@@ -2,7 +2,10 @@ package mvp;
 
 import java.util.Scanner;
 import java.util.InputMismatchException;
+import java.util.LinkedList;
 import java.util.Random;
+import java.util.HashSet;
+import java.util.Arrays;
 
 public class Game {
     private CodePeg[] code;
@@ -15,14 +18,25 @@ public class Game {
 
     public Game(long seed) {
         Random random = new Random(seed);
-        int[] code = new int[NUM_CODEPEGS];
+        code = new CodePeg[NUM_CODEPEGS];
         for (int i = 0; i < code.length; i++) {
-            code[i] = random.nextInt(DIFFERENT_COLORS);
+            code[i] = getCodePegValue(random.nextInt(DIFFERENT_COLORS));
         }
     }
 
     public Game() {
         this(new Random().nextLong());
+    }
+
+    public static CodePeg getCodePegValue(int value) {
+        if (value >= DIFFERENT_COLORS || value < 0) {
+            throw new IllegalArgumentException("CodePeg value is not valid");
+        }
+        return CodePeg.values()[value];
+    }
+
+    public static CodePeg getCodePegValue(String value) throws IllegalArgumentException {
+        return CodePeg.valueOf(value);
     }
 
     public static void main(String[] args) {
@@ -44,6 +58,8 @@ public class Game {
         } else {
             System.out.println("Codemaker has won");
         }
+        System.out.println("The code was:");
+        printArray(code);
     }
 
     public static Response[] makeGuess(CodePeg[] correctCode, CodePeg[] guess) {
@@ -96,36 +112,46 @@ public class Game {
 
         for (int i = 0; i < Game.NUM_CODEPEGS; i++) {
             System.out.printf("Input guess for codepeg #%d: ", i);
-            try {
-                guess[i] = CodePeg.values()[scanner.nextInt()];
-            } catch (InputMismatchException ime) {
-                guess[i] = CodePeg.valueOf(scanner.next());
+            boolean guessed = false;
+            while (!guessed) {
+                String val = scanner.next();
+                try {
+                    guess[i] = getCodePegValue(val);
+                    guessed = true;
+                } catch (IllegalArgumentException iae) {
+                    try {
+                        int pegNumber = Integer.parseInt(val);
+                        guess[i] = getCodePegValue(pegNumber);
+                        guessed = true;
+                    } catch (NumberFormatException nfe) {
+                        System.err.println("Invalid Input");
+                    }
+                }
             }
+
         }
         return guess;
     }
 
-    public static void printArray(Response[] arr) {
+    public static <T> void printArray(T[] arr) {
         for (int i = 0; i < arr.length; i++) {
-            System.out.println(arr[i]);
+            System.out.println(arr[i].toString());
         }
     }
 
     private class MasterMindAI {
         int guessCounter = 0;
         CodePeg[] pegs = CodePeg.values();
-        CodePeg[][] possibleCodes;
+        LinkedList<CodePeg[]> possibleCodes;
         CodePeg[] lastGuess = null;
 
         private MasterMindAI() {
-            int validCodePegCount = pegs.length - 1; // Don't include the invalid peg
-            possibleCodes = new CodePeg[(int) Math.pow(validCodePegCount, 4)][NUM_CODEPEGS];
-            for (int i = 0; i < validCodePegCount; i++) {
-                for (int j = 0; j < validCodePegCount; j++) {
-                    for (int k = 0; k < validCodePegCount; k++) {
-                        for (int l = 0; l < validCodePegCount; l++) {
-                            possibleCodes[i * i * i * i + j * j * j + k * k + l] = new CodePeg[] { pegs[i], pegs[j],
-                                    pegs[k], pegs[l] };
+            possibleCodes = new HashSet<>();
+            for (int i = 0; i < Game.DIFFERENT_COLORS; i++) {
+                for (int j = 0; j < Game.DIFFERENT_COLORS; j++) {
+                    for (int k = 0; k < Game.DIFFERENT_COLORS; k++) {
+                        for (int l = 0; l < Game.DIFFERENT_COLORS; l++) {
+                            possibleCodes.push(new CodePeg[] { pegs[i], pegs[j], pegs[k], pegs[l] });
                         }
                     }
                 }
@@ -137,19 +163,23 @@ public class Game {
             if (guessCounter == 0) {
                 guess = new CodePeg[] { pegs[0], pegs[0], pegs[1], pegs[1] };
             } else {
-                for (int i = 0; i < possibleCodes.length; i++) {
-                    if (possibleCodes[i] != null) {
-                        if (Game.makeGuess(lastGuess, possibleCodes[i]) != response) {
-                            System.out.println("my suspicions proved true");
-                            possibleCodes[i] = null;
-                        }
-                    }
-                }
-                for (int i = 0)
+                pruneCodes(response);
+                guess = possibleCodes.pop();
             }
             guessCounter++;
             lastGuess = guess;
             return guess;
+        }
+
+        private void pruneCodes(Response[] response) {
+            if (lastGuess == null) {
+                throw new IllegalStateException("No guess has been made yet");
+            }
+            for (CodePeg[] code : possibleCodes) {
+                if (!Arrays.equals(Game.makeGuess(code, lastGuess), response)) {
+                    possibleCodes.remove(code);
+                }
+            }
         }
     }
 }
