@@ -17,3 +17,4 @@ During the process of making this game, I learned about the following:
 -   Minimax technique - how to minimize the amount of things you don't want to happen
 -   Effeciency - I learned of the differences of worst case scenarios for data structures like priority queues and hashmaps
 -   Version Control - I learned about multiple powerful features in git like `git diff`
+-   Java Features - how to do assertions, make a map, iterate over a collection, generate random numbers, etc.

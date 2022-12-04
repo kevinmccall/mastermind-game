@@ -7,8 +7,11 @@ import java.util.Random;
 import java.util.Arrays;
 
 public class Game {
+
+    // Codes are represented using an array of CodePeg Enums size NUM_GUESSES
     private CodePeg[] code;
-    public static final int NUM_CODEPEGS = 4, NUM_ROWS = 12, DIFFERENT_COLORS = 6, NUM_GUESSES = 12;
+    // Different colors are the number of valid CodePeg colors
+    public static final int NUM_CODEPEGS = 4, DIFFERENT_COLORS = 6, NUM_GUESSES = 12;
 
     public static void main(String[] args) {
         boolean isAIPlaying = false;
@@ -218,8 +221,6 @@ public class Game {
 
         /**
          * Uses minimax technique to set the best code
-         * 
-         * 
          */
         private void setNextCode(Response[] response) {
             int maxScore = Integer.MAX_VALUE;
