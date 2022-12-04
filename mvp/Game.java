@@ -1,17 +1,27 @@
 package mvp;
 
 import java.util.Scanner;
-import java.util.InputMismatchException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
-import java.util.HashSet;
-import java.util.PriorityQueue;
 import java.util.Arrays;
 
 public class Game {
     private CodePeg[] code;
     public static final int NUM_CODEPEGS = 4, NUM_ROWS = 12, DIFFERENT_COLORS = 6, NUM_GUESSES = 12;
+
+    public static void main(String[] args) {
+        boolean isAIPlaying = true;
+        Game game = new Game();
+        if (isAIPlaying) {
+            game.play();
+        } else {
+            Scanner scanner = new Scanner(System.in);
+            game.play(scanner);
+            scanner.close();
+        }
+
+    }
 
     public Game(CodePeg[] secretCode) {
         code = secretCode;
@@ -40,34 +50,23 @@ public class Game {
         return CodePeg.valueOf(value);
     }
 
-    public static void main(String[] args) {
-        boolean isAIPlaying = true;
-        Game game = new Game();
-        if (isAIPlaying) {
-            game.play();
-        } else {
-            Scanner scanner = new Scanner(System.in);
-            game.play(scanner);
-            scanner.close();
-        }
-
-    }
-
     public boolean play(Scanner scanner) {
         boolean hasWon = false;
-        for (int i = 0; i < Game.NUM_GUESSES && !hasWon; i++) {
+        int numGuesses;
+        for (numGuesses = 0; numGuesses < Game.NUM_GUESSES && !hasWon; numGuesses++) {
             Response[] response = makeGuess(code, getGuess(scanner));
             System.out.println("Response: " + Arrays.toString(response));
             hasWon = determineIfWon(response);
         }
-        printGameResult(hasWon);
+        printGameResult(hasWon, numGuesses);
         return hasWon;
     }
 
     public boolean play() {
         MasterMindAI ai = new MasterMindAI();
         boolean hasWon = false;
-        for (int i = 0; i < Game.NUM_GUESSES && !hasWon; i++) {
+        int numGuesses;
+        for (numGuesses = 0; numGuesses < Game.NUM_GUESSES && !hasWon; numGuesses++) {
             CodePeg[] aiGuess = ai.makeGuess();
             System.out.println("AI Guess: " + Arrays.toString(aiGuess));
             Response[] response = makeGuess(code, aiGuess);
@@ -75,11 +74,17 @@ public class Game {
             ai.updateState(response);
             hasWon = determineIfWon(response);
         }
-        printGameResult(hasWon);
+        printGameResult(hasWon, numGuesses);
+        assert numGuesses <= 5;
         return hasWon;
     }
 
     public static Response[] makeGuess(CodePeg[] correctCode, CodePeg[] guess) {
+        if (correctCode == null) {
+            throw new IllegalArgumentException("Base code can not be null.");
+        } else if (guess == null) {
+            throw new IllegalArgumentException("Guess code can not be null.");
+        }
         int responseIndex = 0;
         int difIndex = 0;
         CodePeg[] potentialPegs = new CodePeg[NUM_CODEPEGS];
@@ -151,12 +156,12 @@ public class Game {
         return guess;
     }
 
-    private void printGameResult(boolean hasWon) {
+    private void printGameResult(boolean hasWon, int numGuesses) {
         System.out.println("===========================================");
         if (hasWon) {
-            System.out.println("Codebreaker has won");
+            System.out.printf("Codebreaker has won in %d guesses!\n", numGuesses);
         } else {
-            System.out.println("Codemaker has won");
+            System.out.println("Codemaker has made an unbeatable code and won!");
         }
         System.out.println("The code was: " + Arrays.toString(code));
         System.out.println("===========================================");
@@ -167,6 +172,7 @@ public class Game {
         CodePeg[] pegs = CodePeg.values();
         LinkedList<CodePeg[]> possibleCodes;
         CodePeg[] lastGuess = null;
+        CodePeg[] nextGuess = null;
 
         private MasterMindAI() {
             possibleCodes = new LinkedList<>();
@@ -186,7 +192,7 @@ public class Game {
             if (guessCounter == 0) {
                 guess = new CodePeg[] { pegs[0], pegs[0], pegs[1], pegs[1] };
             } else {
-                guess = possibleCodes.pop();
+                guess = nextGuess;
             }
             guessCounter++;
             lastGuess = guess;
@@ -195,6 +201,7 @@ public class Game {
 
         private void updateState(Response[] response) {
             pruneCodes(response);
+            setNextCode(response);
         }
 
         private void pruneCodes(Response[] response) {
@@ -210,24 +217,30 @@ public class Game {
         }
 
         /**
-         * Uses minimax technique to get the best code
+         * Uses minimax technique to set the best code
          * 
-         * @return best possible code
+         * 
          */
-        private CodePeg[] getBestCode(Response[] response) {
-            PriorityQueue queue = new PriorityQueue<>();
+        private void setNextCode(Response[] response) {
+            int maxScore = Integer.MAX_VALUE;
+            CodePeg[] bestCode = null;
+
             for (CodePeg[] code : possibleCodes) {
                 int codeScore = 0;
                 for (CodePeg[] compareCode : possibleCodes) {
                     if (compareCode == code) {
                         continue;
                     }
-                    if (Arrays.equals(Game.makeGuess(code, lastGuess), response)) {
+                    if (Arrays.equals(Game.makeGuess(code, compareCode), response)) {
                         codeScore += 1;
                     }
                 }
+                if (codeScore < maxScore) {
+                    maxScore = codeScore;
+                    bestCode = code;
+                }
             }
-            return queue.peek();
+            nextGuess = bestCode;
         }
     }
 }
