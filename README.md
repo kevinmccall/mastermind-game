@@ -4,7 +4,7 @@ Mastermind game implemented in Java for my honors contract in CS 151.
 
 ## How to Play
 
-Run `java Game` then use STDIN to input guesses(Can be either colors or numbers 0-5).
+Run `java Game` then use STDIN to input guesses (Can be either colors or numbers 0-5).
 
 ## How to Enable AI
 
