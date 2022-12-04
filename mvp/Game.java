@@ -11,7 +11,7 @@ public class Game {
     public static final int NUM_CODEPEGS = 4, NUM_ROWS = 12, DIFFERENT_COLORS = 6, NUM_GUESSES = 12;
 
     public static void main(String[] args) {
-        boolean isAIPlaying = true;
+        boolean isAIPlaying = false;
         Game game = new Game();
         if (isAIPlaying) {
             game.play();
