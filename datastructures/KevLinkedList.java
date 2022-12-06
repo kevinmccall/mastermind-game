@@ -21,9 +21,6 @@ public class KevLinkedList<Q> {
 
     }
 
-    public KevLinkedList() {
-    }
-
     private class Node<T> {
         T data;
         Node<T> next;

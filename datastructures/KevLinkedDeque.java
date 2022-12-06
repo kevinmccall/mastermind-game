@@ -6,6 +6,29 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class KevLinkedDeque<E> implements Deque<E> {
+    public static void main(String[] args) {
+        KevLinkedDeque<String> list = new KevLinkedDeque<>();
+        list.addLast("one fish");
+        list.addLast("two fish");
+        list.addLast("orange fish");
+        list.addLast("blue fish");
+        System.out.println(list);
+        list.remove("orange fish");
+        list.addFirst("red fish");
+        System.out.println(list);
+        for (String string : list) {
+            System.out.println(string);
+        }
+        System.out.println("backwards");
+
+        for (Iterator<String> iter = list.descendingIterator(); iter.hasNext();) {
+            System.out.println(iter.next());
+        }
+        // while (iter.hasNext()) {
+        // System.out.println(iter.next());
+        // }
+    }
+
     private class Node {
         private E data;
         private Node next;
@@ -19,8 +42,11 @@ public class KevLinkedDeque<E> implements Deque<E> {
     }
 
     private class KevLinkedDequeForwardsIterator implements Iterator<E> {
+        private Node current;
 
-        Node current = head;
+        private KevLinkedDequeForwardsIterator() {
+            current = head;
+        }
 
         @Override
         public boolean hasNext() {
@@ -40,8 +66,11 @@ public class KevLinkedDeque<E> implements Deque<E> {
     }
 
     private class KevLinkedDequeBackwardsIterator implements Iterator<E> {
+        private Node current;
 
-        Node current = tail;
+        private KevLinkedDequeBackwardsIterator() {
+            current = tail;
+        }
 
         @Override
         public boolean hasNext() {
@@ -76,16 +105,7 @@ public class KevLinkedDeque<E> implements Deque<E> {
 
     @Override
     public boolean add(E e) {
-        if (tail == null) {
-            head = new Node(e);
-            tail = head;
-        } else {
-            Node node = new Node(e);
-            tail.next = node;
-            node.previous = tail;
-            tail = node;
-        }
-        numElements++;
+        addLast(e);
         return true;
     }
 
@@ -158,18 +178,27 @@ public class KevLinkedDeque<E> implements Deque<E> {
     @Override
     public void addFirst(E e) {
         Node node = new Node(e);
-        node.next = head;
-        head.previous = node;
+        if (head == null) {
+            tail = node;
+        } else {
+            node.next = head;
+            head.previous = node;
+        }
         head = node;
         numElements++;
     }
 
     @Override
     public void addLast(E e) {
-        Node node = new Node(e);
-        tail.next = node;
-        node.previous = tail;
-        tail = node;
+        if (tail == null) {
+            head = new Node(e);
+            tail = head;
+        } else {
+            Node node = new Node(e);
+            tail.next = node;
+            node.previous = tail;
+            tail = node;
+        }
         numElements++;
     }
 
@@ -199,6 +228,9 @@ public class KevLinkedDeque<E> implements Deque<E> {
 
     @Override
     public E removeLast() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("Cannot remove element from empty list");
+        }
         E data = tail.data;
         tail = tail.previous;
         tail.next = null;
@@ -269,7 +301,7 @@ public class KevLinkedDeque<E> implements Deque<E> {
                     removeFirst();
                 } else {
                     current.previous.next = current.next;
-                    current.next.previous = null;
+                    current.next.previous = current.previous;
                     numElements--;
                 }
                 removed = true;
@@ -360,5 +392,19 @@ public class KevLinkedDeque<E> implements Deque<E> {
     @Override
     public Iterator<E> descendingIterator() {
         return new KevLinkedDequeBackwardsIterator();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Head: ");
+        sb.append("null");
+        sb.append(" <--> ");
+        for (E data : this) {
+            sb.append(data.toString());
+            sb.append(" <--> ");
+        }
+        sb.append("null");
+
+        return sb.toString();
     }
 }

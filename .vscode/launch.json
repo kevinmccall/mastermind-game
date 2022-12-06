@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch KevLinkedDeque",
+            "request": "launch",
+            "mainClass": "datastructures.KevLinkedDeque",
+            "projectName": "mastermind-game_61efd91a"
+        },
+        {
+            "type": "java",
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}"
